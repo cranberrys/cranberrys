@@ -70,6 +70,8 @@ class AutoCheckInView(View):
     async def get(self):
         token = data.get('token', '')
         if token:
+            return {'name': 'NoToken'}
+        else:
             return {'name': 'RaspManager'}
 
 

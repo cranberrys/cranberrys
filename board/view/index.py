@@ -16,7 +16,7 @@ class IndexView(View):
                         {
                             'icon': '',
                             'title': '签到中心1',
-                            'link': 'welcome1',
+                            'link': 'auto_check_in',
                         },
                         {
                             'icon': '',

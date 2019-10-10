@@ -5,7 +5,8 @@ from aiohttp import web
 from board.view.error import ErrorView
 from board.view.index import IndexView
 from board.view.login import LoginView
-from board.view.welcome import WelcomeView
+from board.view.module.welcome import WelcomeView
+from view.module.auto_check_in import AutoCheckInView
 
 
 async def handler(request):
@@ -23,8 +24,12 @@ app.router.add_view('/index', IndexView, name='index')
 app.router.add_view('/error', ErrorView, name='error')
 
 app.router.add_view('/welcome', WelcomeView, name='welcome')
+
+app.router.add_view('/auto_check_in', AutoCheckInView, name='auto_check_in')
+
 app.router.add_view('/welcome1', WelcomeView, name='welcome1')
 app.router.add_view('/welcome2', WelcomeView, name='welcome2')
+
 
 if __name__ == '__main__':
     web.run_app(app)
