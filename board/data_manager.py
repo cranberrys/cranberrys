@@ -1,3 +1,3 @@
 import shelve
 
-data = shelve.open('shelve.data')
+dm = shelve.open('shelve.data')
