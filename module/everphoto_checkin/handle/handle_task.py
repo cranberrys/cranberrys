@@ -54,6 +54,7 @@ async def ec_task_action(request):
             return web.json_response({'code': -1, 'msg': '签到状态查询失败', })
         task['can_check_in'] = resp_data['can_checkin']
         if resp_data['can_checkin'] is False:
+            task['last_time'] = datetime.now()
             return web.json_response({'code': -1, 'msg': '今日已签到', })
 
         resp = await EverPhoto.checkin_post(task['token'])
