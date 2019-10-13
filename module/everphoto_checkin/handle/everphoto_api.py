@@ -13,8 +13,8 @@
 @Desc    : 
     
 """
+from board.ac_api.request import AcRequest
 
-from view.module.ac_api.request import AcRequest
 
 BASE_URL = 'https://api.everphoto.cn'
 
@@ -40,7 +40,7 @@ class EverPhoto:
         :param mobile: 手机号码 +8613312345678
         :return:
         """
-        content = await AcRequest.post(f'{BASE_URL}/smscode', params={'mobile': mobile})
+        content = await AcRequest.get(f'{BASE_URL}/smscode', params={'mobile': mobile})
         return content
 
     @staticmethod
@@ -51,7 +51,7 @@ class EverPhoto:
         :param smscode: 验证码 1234
         :return:
         """
-        content = await AcRequest.post(f'{BASE_URL}/auth', json={'mobile': mobile, 'smscode': smscode})
+        content = await AcRequest.post(f'{BASE_URL}/auth', data={'mobile': mobile, 'smscode': smscode})
         return content
 
     @staticmethod

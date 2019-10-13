@@ -13,3 +13,7 @@
 @Desc    : 
     
 """
+from .error import ErrorView
+from .index import IndexView
+from .login import LoginView
+from .welcome import WelcomeView
