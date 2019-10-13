@@ -42,8 +42,8 @@ async def ec_task_action(request):
         if 'token' not in task or task['token'] is None:
             return web.json_response({'code': -1, 'msg': '找不到用户令牌', })
 
-        check_time = task.get('check_time', '')
-        if check_time and int(time.time() / 3600) - int(check_time.timestamp() / 3600) == 0:
+        last_time = task.get('last_time', '')
+        if last_time and int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) == 0:
             return web.json_response({'code': -1, 'msg': '今日已签到', })
 
         resp = await EverPhoto.checkin_query(task['token'])
@@ -88,8 +88,8 @@ class ECView(View):
     async def get(self):
         with data_manager('task_list', 'everphoto_checkin') as task_list:
             for task in task_list.values():
-                check_time = task.get('check_time', '')
-                if check_time and int(time.time() / 3600) - int(check_time.timestamp() / 3600) > 0:
+                last_time = task.get('last_time', '')
+                if last_time and int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) > 0:
                     task['can_check_in'] = True
             context = {
                 'task_list': task_list.values(),

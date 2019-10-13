@@ -10,8 +10,8 @@ async def auto_check_in():
 
     with data_manager('task_list', collection='everphoto_checkin') as task_list:
         for task in task_list.values():
-            check_time = task.get('check_time', '')
-            if check_time and int(time.time() / 3600) - int(check_time.timestamp() / 3600) == 0:
+            last_time = task.get('last_time', '')
+            if last_time and int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) == 0:
                 print(f'task {task["id"]} skip')
                 continue
 
