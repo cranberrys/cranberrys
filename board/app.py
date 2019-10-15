@@ -1,9 +1,13 @@
+import sys
+
 from aiohttp import web
 
 from module_setter import module_set
 from resource_setter import resource_set
 from router_setter import router_set
 from scheduler_setter import scheduler_set
+
+sys.path.append("..")
 
 app = web.Application()
 
