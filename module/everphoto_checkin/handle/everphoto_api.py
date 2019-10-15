@@ -6,7 +6,7 @@
 @Author  : Sam
 @Email   : muumlover@live.com
 @Blog    : https://blog.muumlover.com
-@Project : AutoCheckIn
+@Project : AutoCommand
 @FileName: everphoto_api
 @Software: PyCharm
 @license : (C) Copyright 2019 by muumlover. All rights reserved.

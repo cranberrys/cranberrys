@@ -17,7 +17,7 @@ class IndexView(View):
             })
 
         return {
-            'name': 'AutoCheckIn',
+            'name': 'AutoCommand',
             'main_menu': [
                 {
                     'icon': '',

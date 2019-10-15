@@ -6,7 +6,7 @@
 @Author  : Sam
 @Email   : muumlover@live.com
 @Blog    : https://blog.muumlover.com
-@Project : AutoCheckIn
+@Project : AutoCommand
 @FileName: __init__.py
 @Software: PyCharm
 @license : (C) Copyright 2019 by muumlover. All rights reserved.
@@ -90,7 +90,7 @@ class ECView(View):
         with data_manager('task_list', 'everphoto_checkin') as task_list:
             for task in task_list.values():
                 last_time = task.get('last_time', '')
-                if last_time and int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) > 0:
+                if not last_time or int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) > 0:
                     task['can_check_in'] = True
             context = {
                 'task_list': task_list.values(),

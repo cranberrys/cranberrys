@@ -6,8 +6,8 @@
 @Author  : Sam
 @Email   : muumlover@live.com
 @Blog    : https://blog.muumlover.com
-@Project : AutoCheckIn
-@FileName: ac_request_api
+@Project : AutoCommand
+@FileName: request
 @Software: PyCharm
 @license : (C) Copyright 2019 by muumlover. All rights reserved.
 @Desc    : 
