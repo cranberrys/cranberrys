@@ -21,7 +21,7 @@ from aiohttp import web
 from aiohttp.web_urldispatcher import View
 from aiohttp_jinja2 import template
 
-from board.ac_api.database import data_manager
+from ac_api.database import data_manager
 from .everphoto_api import EverPhoto
 
 

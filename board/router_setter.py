@@ -1,6 +1,6 @@
 from aiohttp import web
 
-from board.handle import *
+from handle import *
 
 
 async def handler(request):
@@ -9,8 +9,6 @@ async def handler(request):
 
 
 def router_set(app):
-    app.router.add_static('/static', './board/static')
-
     app.router.add_get('/', handler)
 
     app.router.add_view('/login', LoginView, name='login')

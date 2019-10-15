@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 
-from board.ac_api.database import data_manager
+from ac_api.database import data_manager
 from .everphoto_api import EverPhoto
 
 

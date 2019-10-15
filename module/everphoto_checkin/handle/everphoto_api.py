@@ -13,7 +13,7 @@
 @Desc    : 
     
 """
-from board.ac_api.request import AcRequest
+from ac_api.request import AcRequest
 
 
 BASE_URL = 'https://api.everphoto.cn'
