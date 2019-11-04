@@ -49,22 +49,22 @@ async def ec_task_action(request):
         resp_query = await EverPhoto.checkin_query(task['token'])
         if resp_query['code'] != 0:
             return web.json_response({'code': -1, 'msg': resp_query['message'], })
-        resp_data = resp_query.get('data', {})
-        if 'can_checkin' not in resp_data:
+        resp_query_data = resp_query.get('data', {})
+        if 'can_checkin' not in resp_query_data:
             return web.json_response({'code': -1, 'msg': '签到状态查询失败', })
 
         resp_post = await EverPhoto.checkin_post(task['token'])
         if resp_post['code'] != 0:
             return web.json_response({'code': -1, 'msg': resp_post['message'], })
-        resp_data = resp_post.get('data', {})
+        resp_post_data = resp_post.get('data', {})
         task['last_time'] = datetime.now()
-        task['last_reward'] = resp_data.get('reward', 0)  # 签到获得空间奖励 单位 字节
-        task['continuity'] = resp_data.get('continuity', 0)  # 连续签到天数
-        task['total_reward'] = resp_data.get('total_reward', 0)  # 累计签到获得空间奖励 单位 字节
-        task['tomorrow_reward'] = resp_data.get('tomorrow_reward', 0)  # 明天签到获得空间奖励 单位 字节
+        task['last_reward'] = resp_post_data.get('reward', 0)  # 签到获得空间奖励 单位 字节
+        task['continuity'] = resp_post_data.get('continuity', 0)  # 连续签到天数
+        task['total_reward'] = resp_post_data.get('total_reward', 0)  # 累计签到获得空间奖励 单位 字节
+        task['tomorrow_reward'] = resp_post_data.get('tomorrow_reward', 0)  # 明天签到获得空间奖励 单位 字节
         task['can_check_in'] = False
 
-        if resp_data['can_checkin'] is False:
+        if resp_query_data['can_checkin'] is False:
             task['last_time'] = datetime.now()
             return web.json_response({'code': -1, 'msg': '今日已通过其他渠道签到', })
 
