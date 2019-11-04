@@ -26,9 +26,9 @@ async def auto_check_in():
             resp_data = resp.get('data', {})
             task['can_check_in'] = resp_data['can_checkin']
             if resp_data['can_checkin'] is False:
-                task['last_time'] = datetime.now()
+                # task['last_time'] = datetime.now()
                 print(f'task {task["id"]} query today already checkin')
-                continue
+                # continue
 
             # 签到失败跳过
             resp = await EverPhoto.checkin_post(task['token'])
@@ -38,9 +38,11 @@ async def auto_check_in():
 
             print(f'task {task["id"]} checkin success')
             resp_data = resp['data']
-            if resp_data['checkin_result']:
-                task['last_time'] = datetime.now()
-                task['last_reward'] = resp_data['reward']  # 签到获得空间奖励 单位 字节
+            # if resp_data['checkin_result']:
+            #     task['last_time'] = datetime.now()
+            #     task['last_reward'] = resp_data['reward']  # 签到获得空间奖励 单位 字节
+            task['last_time'] = datetime.now()
+            task['last_reward'] = resp_data['reward']  # 签到获得空间奖励 单位 字节
             task['continuity'] = resp_data['continuity']  # 连续签到天数
             task['total_reward'] = resp_data['total_reward']  # 累计签到获得空间奖励 单位 字节
             task['tomorrow_reward'] = resp_data['tomorrow_reward']  # 明天签到获得空间奖励 单位 字节
