@@ -4,7 +4,9 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
+from ac_api.scheduler import scheduler
 from .handle.handle_task import ECView, ec_task_action, ec_task_add, ec_task_smscode
+from .handle.scheduler import auto_check_in
 
 
 async def handler(request):
@@ -26,6 +28,17 @@ everphoto_checkin.router.add_post('/smscode', ec_task_smscode, name='ec_task_sms
 
 everphoto_checkin.router.add_view('/task', ECView, name='ec_task_list')
 everphoto_checkin.router.add_view('/task/{id}', ECView, name='ec_task_item')
+
+
+async def init(app):
+    jobs = [
+        {'func': auto_check_in, 'trigger': 'cron', 'hour': '21,23', 'minute': '0'}
+    ]
+    for job in jobs:
+        scheduler.add_job(**job)
+
+
+everphoto_checkin.on_startup.append(init)
 
 if __name__ == '__main__':
     web.run_app(everphoto_checkin)

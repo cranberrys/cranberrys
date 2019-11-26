@@ -43,9 +43,7 @@ def unload(module):
 
 def module_set(app):
     find_all(app)
-    scheduler = app['scheduler']
     for module in app['module_all'].values():
         lib = load(module)
-        app.add_subapp('/' + lib.name, lib.app)
-        for job in lib.jobs:
-            scheduler.add_job(**job)
+        plug_info = lib.plug_info
+        app.add_subapp('/' + plug_info['url'], lib.app)

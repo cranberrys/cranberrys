@@ -1,3 +1,4 @@
+import asyncio
 import sys
 
 from aiohttp import web
@@ -14,7 +15,6 @@ app = web.Application()
 resource_set(app)
 router_set(app)
 scheduler_set(app)
-
 module_set(app)
 
 if __name__ == '__main__':
