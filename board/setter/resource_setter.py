@@ -14,12 +14,12 @@
     
 """
 import os
-
+import pathlib
 import aiohttp_jinja2
 import jinja2
 
 
 def resource_set(app):
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(base_path + '/template'))
-    app.router.add_static('/static', base_path + '/static')
+    base_path = pathlib.Path.cwd() / 'board'
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(str(base_path / 'template')))
+    app.router.add_static('/static', base_path / 'static')

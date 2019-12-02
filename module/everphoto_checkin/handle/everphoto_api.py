@@ -13,56 +13,74 @@
 @Desc    : 
     
 """
-from ac_api.request import AcRequest
-
+import time
+from datetime import datetime
 
 BASE_URL = 'https://api.everphoto.cn'
 
 
-class EverPhoto:
+class TaskManager:
+    def __init__(self, task):
+        self.task = task
 
-    @staticmethod
-    async def check_mobile(mobile, country_code='+86'):
+    @property
+    def is_today_checkin(self):
+        last_time = self.task.get('last_time', '')
+        if last_time and int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) == 0:
+            return True
+        return False
+
+    def update(self, data):
+        self.task['last_time'] = datetime.now()
+        self.task['last_reward'] = data.get('reward', 0)  # 签到获得空间奖励 单位 字节
+        self.task['continuity'] = data.get('continuity', 0)  # 连续签到天数
+        self.task['total_reward'] = data.get('total_reward', 0)  # 累计签到获得空间奖励 单位 字节
+        self.task['tomorrow_reward'] = data.get('tomorrow_reward', 0)  # 明天签到获得空间奖励 单位 字节
+        self.task['can_check_in'] = False
+
+
+class EverPhoto:
+    def __init__(self, request_api):
+        self._request = request_api
+
+    async def check_mobile(self, mobile, country_code='+86'):
         """
         获取账号状态
         :param mobile: 手机号码 13312345678
         :param country_code: 国家代码 +86
         :return:
         """
-        content = await AcRequest.get(f'{BASE_URL}/auth/mobile/check',
-                                      params={'mobile': mobile, 'country_code': country_code})
+        content = await self._request.get(f'{BASE_URL}/auth/mobile/check',
+                                          params={'mobile': mobile, 'country_code': country_code})
         return content
 
-    @staticmethod
-    async def smscode(mobile):
+    async def smscode(self, mobile):
         """
         获取验证码
         :param mobile: 手机号码 +8613312345678
         :return:
         """
-        content = await AcRequest.get(f'{BASE_URL}/smscode', params={'mobile': mobile})
+        content = await self._request.get(f'{BASE_URL}/smscode', params={'mobile': mobile})
         return content
 
-    @staticmethod
-    async def login(mobile, smscode):
+    async def login(self, mobile, smscode):
         """
         登录
         :param mobile: 手机号码 +8613312345678
         :param smscode: 验证码 1234
         :return:
         """
-        content = await AcRequest.post(f'{BASE_URL}/auth', data={'mobile': mobile, 'smscode': smscode})
+        content = await self._request.post(f'{BASE_URL}/auth', data={'mobile': mobile, 'smscode': smscode})
         return content
 
-    @staticmethod
-    async def checkin_post(token):
+    async def checkin_post(self, token):
         """
         提交签到
         :param token: 令牌
         :return:
         """
-        content = await AcRequest.post(f'{BASE_URL}/users/self/checkin/v2',
-                                       headers={'Authorization': f'Bearer {token}'})
+        content = await self._request.post(f'{BASE_URL}/users/self/checkin/v2',
+                                           headers={'Authorization': f'Bearer {token}'})
         return content
         # content_data = content.get('data', {})
         # checkin_result = content_data.get('checkin_result', None)  # 签到结果
@@ -72,8 +90,7 @@ class EverPhoto:
         # tomorrow_reward = content_data.get('tomorrow_reward', 0)  # 明天签到获得空间奖励 单位 字节
         # return checkin_result
 
-    @staticmethod
-    async def checkin_query(token):
+    async def checkin_query(self, token):
         """
         查询签到
         {'timestamp': 1570771777, 'code': 20104, 'message': '未登录'}
@@ -82,7 +99,8 @@ class EverPhoto:
         :param token: 令牌
         :return:
         """
-        content = await AcRequest.get(f'{BASE_URL}/users/self/checkin/v2', headers={'Authorization': f'Bearer {token}'})
+        content = await self._request.get(f'{BASE_URL}/users/self/checkin/v2',
+                                          headers={'Authorization': f'Bearer {token}'})
         return content
         # can_checkin = content.get('data', {}).get('can_checkin', None)
         # return can_checkin

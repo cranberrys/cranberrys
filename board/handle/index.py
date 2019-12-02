@@ -5,16 +5,23 @@ from aiohttp.web_urldispatcher import View
 class IndexView(View):
     @aiohttp_jinja2.template('index.jinja2')
     async def get(self):
-        sub_menu = []
+        sub_index, sub_config = [], []
         for module in self.request.app['module_all'].values():
             if not module['loaded']:
                 continue
             lib = module['lib']
-            sub_menu.append({
-                'icon': '',
-                'title': lib.title,
-                'link': lib.app.router['ec_task_list'].url_for(),
-            })
+            if lib.plug_info['index']:
+                sub_index.append({
+                    'icon': '',
+                    'title': lib.plug_info['title'],
+                    'link': lib.plug_info['index'].url_for(),
+                })
+            if lib.plug_info['config']:
+                sub_config.append({
+                    'icon': '',
+                    'title': lib.plug_info['title'] + '设置',
+                    'link': lib.plug_info['config'].url_for(),
+                })
 
         return {
             'name': 'AutoCommand',
@@ -22,18 +29,18 @@ class IndexView(View):
                 {
                     'icon': '',
                     'title': '签到中心',
-                    'sub_menu': sub_menu + [
+                    'sub_menu': sub_index + [
                         {
                             'icon': '',
                             'title': '敬请期待',
-                            'link': 'welcome',
+                            'link': 'error',
                         }
                     ]
                 },
                 {
                     'icon': '',
                     'title': '签到管理',
-                    'sub_menu': [
+                    'sub_menu': sub_config + [
 
                     ]
                 }

@@ -4,12 +4,12 @@ import shelve
 
 
 class DataManager:
-    def __init__(self, key, file_name):
+    def __init__(self, key, collection):
         self.__dir = pathlib.Path('data')
         if not os.path.exists(self.__dir):
             os.mkdir(self.__dir)
         self.__key = key
-        self.__filepath = self.__dir / file_name
+        self.__filepath = self.__dir / collection
         self.__value = None
 
     def __enter__(self):
@@ -22,7 +22,3 @@ class DataManager:
         dm = shelve.open(str(self.__filepath))
         dm[self.__key] = self.__value
         dm.close()
-
-
-def data_manager(key, collection='shelve'):
-    return DataManager(key, collection)

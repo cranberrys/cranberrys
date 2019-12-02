@@ -3,6 +3,8 @@ import os
 import pathlib
 import sys
 
+from ac_api import AcApi
+
 module_dir = pathlib.Path('module')
 
 
@@ -14,8 +16,10 @@ def find_all(app):
         module_all[module_file] = {
             'name': module_file,
             'module': f'{module_dir}.{module_file}',
-            'loaded': False,
             'lib': None,
+            'loaded': False,
+            'enable': True,
+            'message': '',
         }
     app['module_all'] = module_all
 
@@ -45,5 +49,13 @@ def module_set(app):
     find_all(app)
     for module in app['module_all'].values():
         lib = load(module)
-        plug_info = lib.plug_info
-        app.add_subapp('/' + plug_info['url'], lib.app)
+        if 'id' not in lib.plug_info:
+            module['message'] = '插件 plug_info 配置错误，缺少 id'
+            load(module)
+            continue
+        lib.plug_info['index'] = lib.app.router.get(lib.plug_info['index'])
+        lib.plug_info['config'] = lib.app.router.get(lib.plug_info['config'])
+        lib.app['api'] = AcApi(lib.plug_info['id'], lib.app)
+
+        app.add_subapp('/' + lib.plug_info['id'], lib.app)
+        module['message'] = '插件加载成功'

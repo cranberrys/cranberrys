@@ -13,16 +13,17 @@
 @Desc    : 
     
 """
+import json
 import time
 import uuid
 from datetime import datetime
+from json import JSONDecodeError
 
 from aiohttp import web
 from aiohttp.web_urldispatcher import View
 from aiohttp_jinja2 import template
 
-from ac_api.database import data_manager
-from .everphoto_api import EverPhoto
+from .everphoto_api import TaskManager
 
 
 @template('task_add.jinja2')
@@ -35,34 +36,29 @@ async def ec_task_action(request):
     task_id = data.get('task_id', '')
     if not task_id:
         return web.json_response({'code': -1, 'msg': '请求参数错误', })
-    with data_manager('task_list', 'everphoto_checkin') as task_list:
+    with request.app['api'].data_manager('task_list') as task_list:
         if task_id not in task_list:
             return web.json_response({'code': -1, 'msg': '找不到任务', })
         task = task_list[task_id]
         if 'token' not in task or task['token'] is None:
             return web.json_response({'code': -1, 'msg': '找不到用户令牌', })
+        task_manager = TaskManager(task)
 
-        last_time = task.get('last_time', '')
-        if last_time and int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) == 0:
+        if task_manager.is_today_checkin:
             return web.json_response({'code': -1, 'msg': '今日已签到', })
 
-        resp_query = await EverPhoto.checkin_query(task['token'])
+        resp_query = await request.app['ec_api'].checkin_query(task['token'])
         if resp_query['code'] != 0:
             return web.json_response({'code': -1, 'msg': resp_query['message'], })
         resp_query_data = resp_query.get('data', {})
         if 'can_checkin' not in resp_query_data:
             return web.json_response({'code': -1, 'msg': '签到状态查询失败', })
 
-        resp_post = await EverPhoto.checkin_post(task['token'])
+        resp_post = await request.app['ec_api'].checkin_post(task['token'])
         if resp_post['code'] != 0:
             return web.json_response({'code': -1, 'msg': resp_post['message'], })
-        resp_post_data = resp_post.get('data', {})
-        task['last_time'] = datetime.now()
-        task['last_reward'] = resp_post_data.get('reward', 0)  # 签到获得空间奖励 单位 字节
-        task['continuity'] = resp_post_data.get('continuity', 0)  # 连续签到天数
-        task['total_reward'] = resp_post_data.get('total_reward', 0)  # 累计签到获得空间奖励 单位 字节
-        task['tomorrow_reward'] = resp_post_data.get('tomorrow_reward', 0)  # 明天签到获得空间奖励 单位 字节
-        task['can_check_in'] = False
+
+        task_manager.update(resp_post.get('data', {}))
 
         if resp_query_data['can_checkin'] is False:
             task['last_time'] = datetime.now()
@@ -78,7 +74,7 @@ async def ec_task_smscode(request):
     if mobile[0] != '+':
         mobile = '+86' + mobile
 
-    resp = await EverPhoto.smscode(mobile)
+    resp = await request.app['ec_api'].smscode(mobile)
     if resp['code'] != 0:
         return web.json_response({'code': -1, 'msg': resp['message'], })
     return web.json_response({'code': 0, 'msg': '发送成功'})
@@ -87,7 +83,7 @@ async def ec_task_smscode(request):
 class ECView(View):
     @template('task_list.jinja2')
     async def get(self):
-        with data_manager('task_list', 'everphoto_checkin') as task_list:
+        with self.request.app['api'].data_manager('task_list') as task_list:
             for task in task_list.values():
                 last_time = task.get('last_time', '')
                 if not last_time or int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) > 0:
@@ -105,13 +101,13 @@ class ECView(View):
         if mobile[0] != '+':
             mobile = '+86' + mobile
 
-        resp = await EverPhoto.login(mobile, smscode)
+        resp = await self.request.app['ec_api'].login(mobile, smscode)
         if resp['code'] != 0:
             return web.json_response({'code': -1, 'msg': resp['message'], })
         resp_data = resp.get('data', {})
 
         task_id = str(uuid.uuid4())
-        with data_manager('task_list', 'everphoto_checkin') as task_list:
+        with self.request.app['api'].data_manager('task_list') as task_list:
             task_list[task_id] = {
                 'id': task_id,
                 'mobile': mobile,
@@ -129,8 +125,32 @@ class ECView(View):
 
     async def delete(self):
         task_id = self.request.match_info.get('id', '')
-        with data_manager('task_list', 'everphoto_checkin') as task_list:
+        with self.request.app['api'].data_manager('task_list') as task_list:
             if task_id not in task_list:
                 return web.json_response({'code': -1, 'msg': '找不到任务', })
             task = task_list.pop(task_id)
         return web.json_response({'code': 0, 'msg': '删除成功', })
+
+
+class ConfigView(View):
+    @template('config.jinja2')
+    async def get(self):
+        with self.request.app['api'].data_manager('cron_job') as cron_job:
+            edit_job = cron_job
+        context = {'config': json.dumps(edit_job)}
+        return context
+
+    async def post(self):
+        data = await self.request.post()
+        config_data = data.get('config', '')
+        if not config_data:
+            return web.json_response({'code': -1, 'msg': '配置为空', })
+        try:
+            edit_job = json.loads(config_data)
+        except JSONDecodeError:
+            return web.json_response({'code': -1, 'msg': '配置格式有误', })
+        self.request.app['api'].edit_cron_job(key='auto_check_in', **edit_job)
+        with self.request.app['api'].data_manager('cron_job') as cron_job:
+            cron_job.clear()
+            cron_job.update(edit_job)
+        return web.json_response({'code': 0, 'msg': '保存成功', })

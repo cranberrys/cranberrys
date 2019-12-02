@@ -4,8 +4,8 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 
-from ac_api.scheduler import scheduler
-from .handle.handle_task import ECView, ec_task_action, ec_task_add, ec_task_smscode
+from module.everphoto_checkin.handle.everphoto_api import EverPhoto
+from .handle.handle_task import ECView, ec_task_action, ec_task_add, ec_task_smscode, ConfigView
 from .handle.scheduler import auto_check_in
 
 
@@ -29,13 +29,17 @@ everphoto_checkin.router.add_post('/smscode', ec_task_smscode, name='ec_task_sms
 everphoto_checkin.router.add_view('/task', ECView, name='ec_task_list')
 everphoto_checkin.router.add_view('/task/{id}', ECView, name='ec_task_item')
 
+everphoto_checkin.router.add_view('/config', ConfigView, name='ec_config')
+
 
 async def init(app):
-    jobs = [
-        {'func': auto_check_in, 'trigger': 'cron', 'hour': '21,23', 'minute': '0'}
-    ]
-    for job in jobs:
-        scheduler.add_job(**job)
+    app['ec_api'] = EverPhoto(app['api'].request)
+    with app['api'].data_manager('cron_job') as cron_job:
+        if not cron_job:
+            cron_job.update({'hour': '21,23', 'minute': '0'})
+        # cron_job.clear()
+        # cron_job.update({'minute': '*/1', 'second': '0'})
+        app['api'].add_cron_job(key='auto_check_in', func=auto_check_in, **cron_job)
 
 
 everphoto_checkin.on_startup.append(init)
