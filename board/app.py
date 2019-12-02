@@ -20,6 +20,6 @@ module_set(app)
 if __name__ == '__main__':
     logging.basicConfig(
         format='%(levelname)s: %(asctime)s [%(pathname)s:%(lineno)d] %(message)s',
-        level=logging.NOTSET
+        level=logging.INFO
     )
     web.run_app(app)
