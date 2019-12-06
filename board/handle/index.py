@@ -9,17 +9,17 @@ class IndexView(View):
         for module in self.request.app.module_all.values():
             if not module.loaded:
                 continue
-            if module.lib.app.router.get('index'):
+            if module.app.router.get('index'):
                 sub_index.append({
                     'icon': '',
                     'title': module.lib.plug_info['title'],
-                    'link': module.lib.app.router.get('index').url_for(),
+                    'link': module.app.router.get('index').url_for(),
                 })
-            if module.lib.app.router.get('config'):
+            if module.app.router.get('config'):
                 sub_config.append({
                     'icon': '',
                     'title': module.lib.plug_info['title'] + '设置',
-                    'link': module.lib.app.router.get('config').url_for(),
+                    'link': module.app.router.get('config').url_for(),
                 })
 
         return {

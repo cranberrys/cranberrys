@@ -21,16 +21,7 @@
 <body>
 <div class="layui-fluid">
     <div class="layui-row">
-        {% for plug in plug_enable %}
-            <label for="L_config" class="layui-form-label">{{ plug.title }}</label>
-            <div class="layui-input-inline">
-                <input type="text" id="L_config" name="config" required="" autocomplete="off"
-                       class="layui-input"
-                       value="{{ plug.id }}">
-            </div>
-            <button class="layui-btn" lay-filter="save" lay-submit="">保存</button>
-        {% endfor %}
-        {% for plug in plug_disable %}
+        {% for plug in plug_list %}
             <label for="L_config" class="layui-form-label">{{ plug.name }}</label>
             <label for="L_config" class="layui-form-label">{{ plug.message }}</label>
             {% if plug['loaded'] %}
@@ -63,7 +54,7 @@
                 },
                 success: function (result) {
                     layer.msg(result.msg, {icon: result.code === 0 ? 1 : 2, time: 1000});
-                    location.reload()
+                    xadmin.father_reload();
                 },
                 error: function () {
                     layer.msg("网络请求失败", {icon: 2, time: 1000});

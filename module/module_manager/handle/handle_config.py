@@ -23,21 +23,20 @@ class ConfigView(View):
     @template('config.jinja2')
     async def get(self):
         board = self.request.app['board']
-        plug_enable = []
-        plug_disable = []
+        plug_list = []
         for module in board.module_all.values():
             if module.name == 'module_manager':
                 continue
-            if module.loaded:
-                plug_enable.append(module.lib.plug_info)
-            else:
-                plug_disable.append(module)
-        return {'plug_enable': plug_enable, 'plug_disable': plug_disable}
+            plug_list.append(module)
+        return {'plug_list': plug_list}
 
     async def post(self):
         board = self.request.app['board']
         data = await self.request.post()
         action = data.get('action', '')
         plug_name = data.get('plug_name', '')
-        board.enable_module(plug_name)
+        if action == 'start':
+            board.enable_module(plug_name)
+        elif action == 'stop':
+            board.disable_module(plug_name)
         return web.json_response({'code': 0, 'msg': '插件加载成功，重启后生效', })

@@ -15,7 +15,7 @@
 """
 
 from ac_api._database import DataManager
-from ac_api._global import scheduler
+from ac_api._global import get_scheduler
 from ac_api._request import AcRequest
 
 
@@ -23,7 +23,7 @@ class AcApi:
     def __init__(self, id_, app_):
         self.__id = id_
         self.__app = app_
-        self.__scheduler = scheduler
+        self.__scheduler = get_scheduler()
         self.__scheduler_jobs = {}
 
     request = AcRequest

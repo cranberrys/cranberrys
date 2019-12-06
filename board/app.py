@@ -1,3 +1,4 @@
+import asyncio
 import importlib
 import logging
 import os
@@ -14,6 +15,8 @@ from setter.router_setter import router_set
 
 sys.path.append(".")
 
+loop = asyncio.get_event_loop()
+
 
 class Module:
     name = ''
@@ -23,22 +26,22 @@ class Module:
     enable = False
     message = ''
 
-    def __init__(self, name, path, lib, loaded, enable, message):
+    def __init__(self, name, path, lib, app, loaded, enable, message):
         self.name = name
         self.path = path
         self.lib = lib
+        self.app = app
         self.loaded = loaded
         self.enable = enable
         self.message = message
 
 
 class BoardApplication(web.Application):
-    module_all = {}
-    module_loaded = {}
-    module_enable = {}
-
     def __init__(self):
         super().__init__()
+        self.module_all = {}
+        self.module_loaded = {}
+        self.module_enable = {}
         self._api = AcApi('board', self)
         with self._api.data_manager('module') as module:
             if 'enable' not in module:
@@ -59,6 +62,7 @@ class BoardApplication(web.Application):
                     name=module_name,
                     path=module_path,
                     lib=module_lib,
+                    app=None,
                     loaded=False,
                     enable=module_name in module['enable'],
                     message=''
@@ -68,11 +72,16 @@ class BoardApplication(web.Application):
         with self._api.data_manager('module') as module:
             if plug_name not in module['enable']:
                 module['enable'].append(plug_name)
+                self.hot_restart()
 
     def disable_module(self, plug_name):
         with self._api.data_manager('module') as module:
             if plug_name in module['enable']:
                 module['enable'].remove(plug_name)
+                self.hot_restart()
+
+    def hot_restart(self):
+        raise KeyboardInterrupt()
 
     # def load_module(self, module):
     #     if module.loaded:
@@ -110,16 +119,30 @@ class BoardApplication(web.Application):
     pass
 
 
-app = BoardApplication()
+def get_app():
+    _app = BoardApplication()
 
-resource_set(app)
-router_set(app)
-ac_api_set(app)
-module_set(app)
+    resource_set(_app)
+    router_set(_app)
+    ac_api_set(_app)
+    module_set(_app)
+    return _app
+
 
 if __name__ == '__main__':
     logging.basicConfig(
         format='%(levelname)s: %(asctime)s [%(pathname)s:%(lineno)d] %(message)s',
         level=logging.INFO
     )
-    web.run_app(app)
+    while True:
+        app = get_app()
+        web.run_app(app)
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        for module in app.module_all.values():
+            if module.lib:
+                del sys.modules[module.path]
+                del module.app
+                del module.lib
+            del module
+        del app
+        logging.info('hot restart app')

@@ -15,8 +15,15 @@
 """
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-scheduler = AsyncIOScheduler({
-    # 'apscheduler.jobstores.mongo': {
-    #     'type': 'mongodb'
-    # }
-})
+__scheduler = None
+
+
+def get_scheduler():
+    global __scheduler
+    del __scheduler
+    __scheduler = AsyncIOScheduler({
+        # 'apscheduler.jobstores.mongo': {
+        #     'type': 'mongodb'
+        # }
+    })
+    return __scheduler
