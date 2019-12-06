@@ -55,7 +55,7 @@ class BoardApplication(web.Application):
                 module_lib = None
                 if module_name in module['enable']:
                     module_lib = importlib.import_module(module_path)
-                    if 'id' not in module_lib.plug_info:
+                    if not module_lib.plug_info:
                         del sys.modules[module_path]
                         continue
                 self.module_all[module_name] = Module(

@@ -20,7 +20,7 @@
     <![endif]-->
     <script>
         // 是否开启刷新记忆tab功能
-        // var is_remember = false;
+        var is_remember = false;
     </script>
 </head>
 <body class="index">
@@ -78,21 +78,21 @@
     <div id="side-nav">
         <ul id="nav">
             {% for menu in main_menu %}
-            <li>
-                <a href="javascript:;">
-                    <i class="iconfont left-nav-li" lay-tips="{{ menu.title }}">&#xe6b8;</i>
-                    <cite>{{ menu.title }}</cite>
-                    <i class="iconfont nav_right">&#xe697;</i></a>
-                <ul class="sub-menu">
-                    {% for item in menu.sub_menu %}
-                    <li>
-                        <a onclick="xadmin.add_tab('{{ item.title }}','{{ item.link }}')">
-                            <i class="iconfont">&#xe6a7;</i>
-                            <cite>{{ item.title }}</cite></a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="iconfont left-nav-li" lay-tips="{{ menu.title }}">&#xe6b8;</i>
+                        <cite>{{ menu.title }}</cite>
+                        <i class="iconfont nav_right">&#xe697;</i></a>
+                    <ul class="sub-menu">
+                        {% for item in menu.sub_menu %}
+                            <li>
+                                <a onclick="xadmin.add_tab('{{ item.title }}','{{ item.link }}')">
+                                    <i class="iconfont">&#xe6a7;</i>
+                                    <cite>{{ item.title }}</cite></a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
             {% endfor %}
         </ul>
     </div>
