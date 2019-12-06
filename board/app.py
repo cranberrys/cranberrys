@@ -42,6 +42,7 @@ class BoardApplication(web.Application):
         self.module_all = {}
         self.module_loaded = {}
         self.module_enable = {}
+        self.hot_restart = False
         self._api = AcApi('board', self)
         with self._api.data_manager('module') as module:
             if 'enable' not in module:
@@ -81,6 +82,7 @@ class BoardApplication(web.Application):
                 self.hot_restart()
 
     def hot_restart(self):
+        self.hot_restart = True
         raise KeyboardInterrupt()
 
     # def load_module(self, module):
@@ -137,12 +139,17 @@ if __name__ == '__main__':
     while True:
         app = get_app()
         web.run_app(app)
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        for module in app.module_all.values():
-            if module.lib:
-                del sys.modules[module.path]
-                del module.app
-                del module.lib
-            del module
-        del app
-        logging.info('hot restart app')
+        logging.info('web app stop')
+        if app.hot_restart:
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            for module in app.module_all.values():
+                if module.lib:
+                    del sys.modules[module.path]
+                    del module.app
+                    del module.lib
+                del module
+            del app
+            logging.info('web app begin hot restart')
+        else:
+            logging.info('web app now exit')
+            break
