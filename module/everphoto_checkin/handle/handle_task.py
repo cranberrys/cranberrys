@@ -36,7 +36,7 @@ async def ec_task_action(request):
     task_id = data.get('task_id', '')
     if not task_id:
         return web.json_response({'code': -1, 'msg': '请求参数错误', })
-    with request.app['api'].data_manager('task_list') as task_list:
+    with request.app['board_api'].data_manager('task_list') as task_list:
         if task_id not in task_list:
             return web.json_response({'code': -1, 'msg': '找不到任务', })
         task = task_list[task_id]
@@ -83,7 +83,7 @@ async def ec_task_smscode(request):
 class ECView(View):
     @template('task_list.jinja2')
     async def get(self):
-        with self.request.app['api'].data_manager('task_list') as task_list:
+        with self.request.app['board_api'].data_manager('task_list') as task_list:
             for task in task_list.values():
                 last_time = task.get('last_time', '')
                 if not last_time or int(time.time() / (60 * 60 * 24)) - int(last_time.timestamp() / (60 * 60 * 24)) > 0:
@@ -107,7 +107,7 @@ class ECView(View):
         resp_data = resp.get('data', {})
 
         task_id = str(uuid.uuid4())
-        with self.request.app['api'].data_manager('task_list') as task_list:
+        with self.request.app['board_api'].data_manager('task_list') as task_list:
             task_list[task_id] = {
                 'id': task_id,
                 'mobile': mobile,
@@ -125,7 +125,7 @@ class ECView(View):
 
     async def delete(self):
         task_id = self.request.match_info.get('id', '')
-        with self.request.app['api'].data_manager('task_list') as task_list:
+        with self.request.app['board_api'].data_manager('task_list') as task_list:
             if task_id not in task_list:
                 return web.json_response({'code': -1, 'msg': '找不到任务', })
             task = task_list.pop(task_id)
@@ -135,7 +135,7 @@ class ECView(View):
 class ConfigView(View):
     @template('config.jinja2')
     async def get(self):
-        with self.request.app['api'].data_manager('cron_job') as cron_job:
+        with self.request.app['board_api'].data_manager('cron_job') as cron_job:
             edit_job = cron_job
         context = {'config': json.dumps(edit_job)}
         return context
@@ -149,8 +149,8 @@ class ConfigView(View):
             edit_job = json.loads(config_data)
         except JSONDecodeError:
             return web.json_response({'code': -1, 'msg': '配置格式有误', })
-        self.request.app['api'].edit_cron_job(key='auto_check_in', **edit_job)
-        with self.request.app['api'].data_manager('cron_job') as cron_job:
+        self.request.app['board_api'].edit_cron_job(key='auto_check_in', **edit_job)
+        with self.request.app['board_api'].data_manager('cron_job') as cron_job:
             cron_job.clear()
             cron_job.update(edit_job)
         return web.json_response({'code': 0, 'msg': '保存成功', })

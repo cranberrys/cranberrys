@@ -6,21 +6,20 @@ class IndexView(View):
     @aiohttp_jinja2.template('index.jinja2')
     async def get(self):
         sub_index, sub_config = [], []
-        for module in self.request.app['module_all'].values():
-            if not module['loaded']:
+        for module in self.request.app.module_all.values():
+            if not module.loaded:
                 continue
-            lib = module['lib']
-            if lib.plug_info['index']:
+            if module.lib.app.router.get('index'):
                 sub_index.append({
                     'icon': '',
-                    'title': lib.plug_info['title'],
-                    'link': lib.plug_info['index'].url_for(),
+                    'title': module.lib.plug_info['title'],
+                    'link': module.lib.app.router.get('index').url_for(),
                 })
-            if lib.plug_info['config']:
+            if module.lib.app.router.get('config'):
                 sub_config.append({
                     'icon': '',
-                    'title': lib.plug_info['title'] + '设置',
-                    'link': lib.plug_info['config'].url_for(),
+                    'title': module.lib.plug_info['title'] + '设置',
+                    'link': module.lib.app.router.get('config').url_for(),
                 })
 
         return {

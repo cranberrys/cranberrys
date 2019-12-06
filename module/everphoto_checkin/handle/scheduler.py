@@ -25,7 +25,7 @@ async def check_in(api, task):
 
 async def auto_check_in(app):
     logging.info('scheduler start')
-    with app['api'].data_manager('task_list') as task_list:
+    with app['board_api'].data_manager('task_list') as task_list:
         for task in task_list.values():
             try:
                 await check_in(app['ec_api'], task)

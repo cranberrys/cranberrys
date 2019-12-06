@@ -65,7 +65,7 @@
             console.log(data);
             $.ajax({
                 type: 'post',
-                url: '{{ url("ec_task_list") }}',
+                url: '{{ url("index") }}',
                 data: data.field,
                 success: function (result) {
                     if (result.code === 0) {

@@ -42,7 +42,7 @@
             console.log(data);
             $.ajax({
                 type: 'post',
-                url: '{{ url("ec_config") }}',
+                url: '{{ url("config") }}',
                 data: data.field,
                 success: function (result) {
                     if (result.code === 0) {
