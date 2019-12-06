@@ -55,4 +55,4 @@ class AcApi:
         self.__scheduler_jobs[job.id] = job
 
     def edit_cron_job(self, key, **other_args):
-        scheduler.reschedule_job(job_id=self.__id + key, trigger='cron', **other_args)
+        self.__scheduler.reschedule_job(job_id=self.__id + key, trigger='cron', **other_args)
