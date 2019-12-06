@@ -14,16 +14,19 @@
     
 """
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.base import STATE_RUNNING, STATE_STOPPED
 
 __scheduler = None
 
 
 def get_scheduler():
     global __scheduler
-    del __scheduler
-    __scheduler = AsyncIOScheduler({
-        # 'apscheduler.jobstores.mongo': {
-        #     'type': 'mongodb'
-        # }
-    })
+    if not __scheduler or __scheduler.state == STATE_STOPPED:
+        del __scheduler
+        __scheduler = AsyncIOScheduler({
+            # 'apscheduler.jobstores.mongo': {
+            #     'type': 'mongodb'
+            # }
+        })
+        __scheduler.start()
     return __scheduler
