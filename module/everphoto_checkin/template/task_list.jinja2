@@ -183,8 +183,9 @@
                     task_id: task_id
                 },
                 success: function (result) {
-                    layer.msg(result.msg, {icon: result.code === 0 ? 1 : 2, time: 1000});
-                    location.reload()
+                    layer.msg(result.msg, {icon: result.code === 0 ? 1 : 2, time: 3000}, function () {
+                        location.reload()
+                    });
                 },
                 error: function () {
                     layer.msg("网络请求失败", {icon: 2, time: 1000});
