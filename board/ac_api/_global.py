@@ -14,7 +14,7 @@
     
 """
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.schedulers.base import STATE_RUNNING, STATE_STOPPED
+from apscheduler.schedulers.base import STATE_STOPPED
 
 __scheduler = None
 
@@ -30,3 +30,11 @@ def get_scheduler():
         })
         __scheduler.start()
     return __scheduler
+
+
+def get_new_scheduler():
+    global __scheduler
+    if __scheduler:
+        __scheduler.remove_all_jobs()
+    __scheduler = None
+    return get_scheduler()

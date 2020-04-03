@@ -13,6 +13,7 @@
 @Desc    : 
     
 """
+import asyncio
 
 from aiohttp import web
 from aiohttp.web_urldispatcher import View
@@ -23,20 +24,24 @@ class ConfigView(View):
     @template('config.jinja2')
     async def get(self):
         board = self.request.app['board']
-        plug_list = []
+        module_list = []
         for module in board.module_all.values():
             if module.name == 'module_manager':
                 continue
-            plug_list.append(module)
-        return {'plug_list': plug_list}
+            module_list.append(module)
+        return {'module_list': module_list}
 
     async def post(self):
         board = self.request.app['board']
         data = await self.request.post()
         action = data.get('action', '')
-        plug_name = data.get('plug_name', '')
+        module_name = data.get('module_name', '')
         if action == 'start':
-            board.enable_module(plug_name)
+            callback = board.enable_module
         elif action == 'stop':
-            board.disable_module(plug_name)
+            callback = board.disable_module
+        else:
+            return web.json_response({'code': -1, 'msg': '请求参数错误', })
+        loop = asyncio.get_event_loop()
+        loop.call_soon(callback, module_name)
         return web.json_response({'code': 0, 'msg': '插件加载成功，重启后生效', })

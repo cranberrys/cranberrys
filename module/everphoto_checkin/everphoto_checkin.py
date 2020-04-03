@@ -16,7 +16,7 @@ async def init(app):
             cron_job.update({'hour': '21,23', 'minute': '0'})
         # cron_job.clear()
         # cron_job.update({'minute': '*/1', 'second': '0'})
-        app['board_api'].add_cron_job(key='auto_check_in', func=auto_check_in, **cron_job)
+        app['board_api'].cron_job.add(key='auto_check_in', func=auto_check_in, **cron_job)
 
 
 def everphoto_checkin():

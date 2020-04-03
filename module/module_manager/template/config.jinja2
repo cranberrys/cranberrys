@@ -21,17 +21,17 @@
 <body>
 <div class="layui-fluid">
     <div class="layui-row">
-        {% for plug in plug_list %}
-            <label for="L_config" class="layui-form-label">{{ plug.name }}</label>
-            <label for="L_config" class="layui-form-label">{{ plug.message }}</label>
-            {% if plug['loaded'] %}
+        {% for module in module_list %}
+            <label for="L_config" class="layui-form-label">{{ module.name }}</label>
+            <label for="L_config" class="layui-form-label">{{ module.message }}</label>
+            {% if module['loaded'] %}
                 <button class="layui-btn-danger layui-btn layui-btn-xs"
-                        onclick="do_action(this,'stop','{{ plug.name }}')" href="javascript:;">
+                        onclick="do_action(this,'stop','{{ module.name }}')" href="javascript:;">
                     停用
                 </button>
             {% else %}
                 <button class="layui-btn layui-btn layui-btn-xs"
-                        onclick="do_action(this,'start','{{ plug.name }}')" href="javascript:;">
+                        onclick="do_action(this,'start','{{ module.name }}')" href="javascript:;">
                     启用
                 </button>
             {% endif %}
@@ -43,14 +43,14 @@
         $ = layui.jquery;
     });
 
-    function do_action(obj, action, plug_name) {
+    function do_action(obj, action, module_name) {
         layer.confirm('确认要执行操作吗？', function (index) {
             $.ajax({
                 type: 'post',
                 url: '{{ url("config") }}',
                 data: {
                     action: action,
-                    plug_name: plug_name,
+                    module_name: module_name,
                 },
                 success: function (result) {
                     layer.msg(result.msg, {icon: result.code === 0 ? 1 : 2, time: 1000});

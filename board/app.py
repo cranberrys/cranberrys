@@ -43,6 +43,7 @@ class BoardApplication(web.Application):
         self.module_loaded = {}
         self.module_enable = {}
         self.need_hot_restart = False
+        AcApi.cron_job_reset()
         self._api = AcApi('board', self)
         with self._api.data_manager('module') as module:
             if 'enable' not in module:
@@ -69,17 +70,26 @@ class BoardApplication(web.Application):
                     message=''
                 )
 
-    def enable_module(self, plug_name):
-        with self._api.data_manager('module') as module:
-            if plug_name not in module['enable']:
-                module['enable'].append(plug_name)
-                self.hot_restart()
+    def get_module(self, plug_name):
+        return self.module_all[plug_name]
 
-    def disable_module(self, plug_name):
+    def enable_module(self, module_name):
+        asyncio.get_event_loop().call_later(1, self.hot_restart)
         with self._api.data_manager('module') as module:
-            if plug_name in module['enable']:
-                module['enable'].remove(plug_name)
-                self.hot_restart()
+            if module_name not in module['enable']:
+                module['enable'].append(module_name)
+        module = self.get_module(module_name)
+        if not module.loaded:
+            self.hot_restart()
+
+    def disable_module(self, module_name):
+        with self._api.data_manager('module') as module:
+            if module_name in module['enable']:
+                module['enable'].remove(module_name)
+        module = self.get_module(module_name)
+        if module.loaded:
+            module.app['board_api'].cron_job.stop_all()
+            self.hot_restart()
 
     def hot_restart(self):
         self.need_hot_restart = True
