@@ -1,12 +1,11 @@
-import aiohttp_jinja2
-from aiohttp.web_urldispatcher import View
+from ac_api import AcView, ac_template
 
 
-class IndexView(View):
-    @aiohttp_jinja2.template('index.jinja2')
+class IndexView(AcView):
+    @ac_template('index.jinja2')
     async def get(self):
         sub_index, sub_config = [], []
-        for module in self.request.app.module_all.values():
+        for module in self.app.module_all.values():
             if not module.loaded:
                 continue
             if module.app.router.get('index'):

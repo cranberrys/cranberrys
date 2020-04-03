@@ -1,8 +1,7 @@
-import aiohttp_jinja2
-from aiohttp.web_urldispatcher import View
+from ac_api import AcView, ac_template
 
 
-class WelcomeView(View):
-    @aiohttp_jinja2.template('welcome.jinja2')
+class WelcomeView(AcView):
+    @ac_template('welcome.jinja2')
     async def get(self):
         return {'name': 'RaspManager'}

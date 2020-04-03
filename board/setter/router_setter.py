@@ -1,11 +1,10 @@
-from aiohttp import web
-
+from ac_api import AcResponseErr
 from handle import *
 
 
 async def handler(request):
     location = request.app.router['index'].url_for()
-    raise web.HTTPFound(location=location)
+    raise AcResponseErr.redirect(location=location)
 
 
 def router_set(app):

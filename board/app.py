@@ -5,9 +5,7 @@ import os
 import pathlib
 import sys
 
-from aiohttp import web
-
-from ac_api import AcApi
+from ac_api import AcApplication
 from setter.ac_api_setter import ac_api_set
 from setter.module_setter import module_set, module_dir
 from setter.resource_setter import resource_set
@@ -36,16 +34,15 @@ class Module:
         self.message = message
 
 
-class BoardApplication(web.Application):
+class BoardApplication(AcApplication):
     def __init__(self):
         super().__init__()
         self.module_all = {}
         self.module_loaded = {}
         self.module_enable = {}
         self.need_hot_restart = False
-        AcApi.cron_job_reset()
-        self._api = AcApi('board', self)
-        with self._api.data_manager('module') as module:
+        self.name = 'board'
+        with self.data_manager('module') as module:
             if 'enable' not in module:
                 module['enable'] = []
             if 'module_manager' not in module['enable']:
@@ -75,7 +72,7 @@ class BoardApplication(web.Application):
 
     def enable_module(self, module_name):
         asyncio.get_event_loop().call_later(1, self.hot_restart)
-        with self._api.data_manager('module') as module:
+        with self.data_manager('module') as module:
             if module_name not in module['enable']:
                 module['enable'].append(module_name)
         module = self.get_module(module_name)
@@ -83,12 +80,12 @@ class BoardApplication(web.Application):
             self.hot_restart()
 
     def disable_module(self, module_name):
-        with self._api.data_manager('module') as module:
+        with self.data_manager('module') as module:
             if module_name in module['enable']:
                 module['enable'].remove(module_name)
         module = self.get_module(module_name)
         if module.loaded:
-            module.app['board_api'].cron_job.stop_all()
+            module.app.cron_job.stop_all()
             self.hot_restart()
 
     def hot_restart(self):
@@ -148,7 +145,7 @@ if __name__ == '__main__':
     )
     while True:
         app = get_app()
-        web.run_app(app)
+        app.run()
         logging.info('web app stop')
         if app.need_hot_restart:
             asyncio.set_event_loop(asyncio.new_event_loop())

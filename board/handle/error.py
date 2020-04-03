@@ -1,8 +1,7 @@
-import aiohttp_jinja2
-from aiohttp.web_urldispatcher import View
+from ac_api import ac_template, AcView
 
 
-class ErrorView(View):
-    @aiohttp_jinja2.template('error.jinja2')
+class ErrorView(AcView):
+    @ac_template('error.jinja2')
     async def get(self):
         return {'name': 'RaspManager'}

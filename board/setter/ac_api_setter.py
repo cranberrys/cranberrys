@@ -1,6 +1,6 @@
-from ac_api._global import get_scheduler
+from ac_api import AcCronJobReset
 
 
 def ac_api_set(app):
-    scheduler = get_scheduler()
+    scheduler = AcCronJobReset()
     app['scheduler'] = scheduler
