@@ -31,7 +31,7 @@ AcCronJobReset = get_new_scheduler
 ac_template = template
 
 
-class AcApplication(web.Application):
+class Module(web.Application):
     _entity = None
     _name = None
 

@@ -5,7 +5,7 @@ import os
 import pathlib
 import sys
 
-from ac_api import AcApplication
+from ac_api import Module
 from setter.ac_api_setter import ac_api_set
 from setter.module_setter import module_set, module_dir
 from setter.resource_setter import resource_set
@@ -16,15 +16,22 @@ sys.path.append(".")
 loop = asyncio.get_event_loop()
 
 
-class Module:
-    name = ''
-    path = ''
-    lib = None
-    loaded = False
-    enable = False
-    message = ''
+class Plugin:
+    """
+
+    """
 
     def __init__(self, name, path, lib, app, loaded, enable, message):
+        """
+
+        :param name:
+        :param path:
+        :param lib:
+        :param app:
+        :param loaded:
+        :param enable:
+        :param message:
+        """
         self.name = name
         self.path = path
         self.lib = lib
@@ -34,7 +41,11 @@ class Module:
         self.message = message
 
 
-class BoardApplication(AcApplication):
+class Board(Module):
+    """
+
+    """
+
     def __init__(self):
         super().__init__()
         self.module_all = {}
@@ -42,28 +53,38 @@ class BoardApplication(AcApplication):
         self.module_enable = {}
         self.need_hot_restart = False
         self.name = 'board'
-        with self.data_manager('module') as module:
-            if 'enable' not in module:
-                module['enable'] = []
-            if 'module_manager' not in module['enable']:
-                module['enable'] += ['module_manager']
+        self._load_plugin()
+
+    def _load_plugin(self):
+        with self.data_manager('module') as _module:
+            if 'enable' not in _module:
+                _module['enable'] = []
+            if 'module_manager' not in _module['enable']:
+                _module['enable'] += ['module_manager']
             for module_name in os.listdir(pathlib.Path('.') / module_dir):
+                logging.info(f'find module "{module_name}"')
                 if module_name in self.module_all:
+                    logging.info(f'skip module "{module_name}"')
                     continue
+                logging.info(f'load module "{module_name}"')
                 module_path = f'{module_dir}.{module_name}'
                 module_lib = None
-                if module_name in module['enable']:
+                if module_name in _module['enable']:
                     module_lib = importlib.import_module(module_path)
                     if not module_lib.plug_info:
+                        logging.info(f'load module "{module_name}" fail')
                         del sys.modules[module_path]
                         continue
-                self.module_all[module_name] = Module(
+                    logging.info(f'load module "{module_name}" success')
+                else:
+                    logging.info(f'load module "{module_name}" success')
+                self.module_all[module_name] = Plugin(
                     name=module_name,
                     path=module_path,
                     lib=module_lib,
                     app=None,
                     loaded=False,
-                    enable=module_name in module['enable'],
+                    enable=module_name in _module['enable'],
                     message=''
                 )
 
@@ -129,7 +150,7 @@ class BoardApplication(AcApplication):
 
 
 def get_app():
-    _app = BoardApplication()
+    _app = Board()
 
     resource_set(_app)
     router_set(_app)

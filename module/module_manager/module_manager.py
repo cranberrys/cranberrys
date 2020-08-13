@@ -16,7 +16,7 @@
 
 import os
 
-from ac_api import AcApplication
+from ac_api import Module
 from .handle.handle_config import ConfigView
 
 
@@ -27,7 +27,7 @@ async def init_callback(app):
 def module_manager():
     static_path = os.path.dirname(os.path.abspath(__file__)) + '/template'
 
-    app = AcApplication()
+    app = Module()
     app.ac_set_static_path(static_path)
     app.router.add_view('/config', ConfigView, name='config')
     app.ac_set_init_callback(init_callback)
