@@ -14,6 +14,8 @@
     
 """
 import asyncio
+import logging
+import pathlib
 
 import aiohttp_jinja2
 import jinja2
@@ -32,12 +34,17 @@ ac_template = template
 
 
 class AcApplication(web.Application):
-    _entity = None
+    _module = None
     _name = None
 
     board = None
     cron_job = None
     request = AcRequest
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # aiohttp_jinja2.setup(self, loader=jinja2.FileSystemLoader(static_path))
 
     @property
     def name(self):
@@ -49,19 +56,30 @@ class AcApplication(web.Application):
         self.cron_job = CronJob(name=self.name, module=self)
 
     @property
-    def entity(self):
-        return self._entity
+    def module(self):
+        return self._module
 
-    @entity.setter
-    def entity(self, value):
-        self._entity = value
-        self.name = self.entity.name
+    @module.setter
+    def module(self, value):
+        self._module = value
+        self.name = self.module.name
 
     def data_manager(self, key):
         return DataManager(key, collection=self.name)
 
-    def ac_set_static_path(self, static_path):
-        aiohttp_jinja2.setup(self, loader=jinja2.FileSystemLoader(static_path))
+    def ac_set_template_path(self, path):
+        template_path = pathlib.Path(self.module.path) / path
+        if template_path.exists():
+            aiohttp_jinja2.setup(self, loader=jinja2.FileSystemLoader(template_path))
+        else:
+            logging.warning(f'template path {template_path} not exists')
+
+    def ac_set_static_path(self, path):
+        static_path = pathlib.Path(self.module.path) / path
+        if static_path.exists():
+            self.router.add_static('/static', static_path)
+        else:
+            logging.warning(f'static path {static_path} not exists')
 
     def ac_set_init_callback(self, callback):
         self.on_startup.append(callback)

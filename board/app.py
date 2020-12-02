@@ -17,17 +17,13 @@ loop = asyncio.get_event_loop()
 
 
 class Module:
-    name = ''
-    path = ''
-    lib = None
-    loaded = False
-    enable = False
-    message = ''
 
-    def __init__(self, name, path, lib, app, loaded, enable, message):
+    def __init__(self, name, path, lib, package, _class, app, loaded=False, enable=False, message=''):
         self.name = name
         self.path = path
         self.lib = lib
+        self.package = package
+        self._class = _class
         self.app = app
         self.loaded = loaded
         self.enable = enable
@@ -47,25 +43,41 @@ class BoardApplication(AcApplication):
                 module['enable'] = []
             if 'module_manager' not in module['enable']:
                 module['enable'] += ['module_manager']
-            for module_name in os.listdir(pathlib.Path('.') / module_dir):
+            module_path = pathlib.Path('.') / module_dir
+            for module_name in os.listdir(module_path):
+                module_path = module_path / module_name
                 if module_name in self.module_all:
                     continue
-                module_path = f'{module_dir}.{module_name}'
-                module_lib = None
+                m_lib = None
                 if module_name in module['enable']:
-                    module_lib = importlib.import_module(module_path)
-                    if not module_lib.plug_info:
-                        del sys.modules[module_path]
-                        continue
+                    try:
+                        m_lib, plug_info = self.load_module(module_name)
+                    except Exception as e:
+                        logging.exception(e)
                 self.module_all[module_name] = Module(
                     name=module_name,
-                    path=module_path,
-                    lib=module_lib,
+                    path=str(module_path),
+                    lib=m_lib,
                     app=None,
                     loaded=False,
                     enable=module_name in module['enable'],
                     message=''
                 )
+
+    def load_module(self, module_name):
+        m_package = f'{module_dir}.{module_name}'
+        m_lib = importlib.import_module(m_package)
+        if not m_lib.plug_info:
+            del sys.modules[m_package]
+            return None, {}
+        plug_info = m_lib.plug_info
+        if 'class' not in m_lib.plug_info:
+            del sys.modules[m_package]
+            return None, plug_info
+        if not issubclass(m_lib.plug_info['class'], AcApplication):
+            del sys.modules[m_package]
+            return None, plug_info
+        return m_lib, plug_info
 
     def get_module(self, plug_name):
         return self.module_all[plug_name]
@@ -129,13 +141,13 @@ class BoardApplication(AcApplication):
 
 
 def get_app():
-    _app = BoardApplication()
+    board = BoardApplication()
 
-    resource_set(_app)
-    router_set(_app)
-    ac_api_set(_app)
-    module_set(_app)
-    return _app
+    resource_set(board)
+    router_set(board)
+    ac_api_set(board)
+    module_set(board)
+    return board
 
 
 if __name__ == '__main__':
